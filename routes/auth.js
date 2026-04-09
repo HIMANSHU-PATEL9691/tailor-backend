@@ -11,18 +11,26 @@ const isAdminUser = (user) => user?.role === 'admin';
 const ADMIN_LOGIN_ID = process.env.ADMIN_LOGIN_ID || 'admin';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'bajrang@55';
 const SYSTEM_ADMIN_ID = 'system-admin';
-const VALID_DURATION_UNITS = ['minutes', 'hours', 'days', 'months', 'years'];
+const VALID_DURATION_UNITS = ['minutes', 'hours', 'days', 'months', 'years', 'lifetime'];
 
 const parseAccessDuration = (payload = {}) => {
   const durationValue = Number(payload.durationValue);
   const durationUnit = String(payload.durationUnit || '').toLowerCase();
 
-  if (!Number.isFinite(durationValue) || durationValue <= 0) {
-    return { error: 'Duration value must be greater than 0' };
+  if (!VALID_DURATION_UNITS.includes(durationUnit)) {
+    return { error: 'Duration unit must be minutes, hours, days, months, years, or lifetime' };
   }
 
-  if (!VALID_DURATION_UNITS.includes(durationUnit)) {
-    return { error: 'Duration unit must be minutes, hours, days, months, or years' };
+  if (durationUnit === 'lifetime') {
+    return {
+      durationValue: 1,
+      durationUnit,
+      expiresAt: null,
+    };
+  }
+
+  if (!Number.isFinite(durationValue) || durationValue <= 0) {
+    return { error: 'Duration value must be greater than 0' };
   }
 
   const expiresAt = new Date();
@@ -557,7 +565,9 @@ router.put('/users/:id/approve', auth, async (req, res) => {
 
     res.json({
       success: true,
-      message: `User approved for ${duration.durationValue} ${duration.durationUnit}`,
+      message: duration.durationUnit === 'lifetime'
+        ? 'User approved for lifetime'
+        : `User approved for ${duration.durationValue} ${duration.durationUnit}`,
       user,
     });
   } catch (err) {
@@ -664,7 +674,9 @@ router.put('/users/:id/unblock', auth, async (req, res) => {
 
     res.json({
       success: true,
-      message: `User unblocked for ${duration.durationValue} ${duration.durationUnit}`,
+      message: duration.durationUnit === 'lifetime'
+        ? 'User unblocked for lifetime'
+        : `User unblocked for ${duration.durationValue} ${duration.durationUnit}`,
       user,
     });
   } catch (err) {

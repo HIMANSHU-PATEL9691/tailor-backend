@@ -4,9 +4,9 @@ const bcrypt = require('bcryptjs');
 const rechargeHistorySchema = new mongoose.Schema(
   {
     durationValue: { type: Number, required: true },
-    durationUnit: { type: String, required: true, enum: ['minutes', 'hours', 'days', 'months', 'years'] },
+    durationUnit: { type: String, required: true, enum: ['minutes', 'hours', 'days', 'months', 'years', 'lifetime'] },
     startedAt: { type: Date, required: true },
-    expiresAt: { type: Date, required: true },
+    expiresAt: { type: Date },
     actionType: { type: String, required: true, enum: ['approve', 'unblock', 'recharge'] },
     byAdminId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     byAdminName: { type: String },
